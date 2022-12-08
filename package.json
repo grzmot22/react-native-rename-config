@@ -10,7 +10,7 @@
     "relink": "npm unlink && npm run prepublish && npm link",
     "format": "prettier --write '**/*.{js,jsx}'",
     "lint": "eslint '**/*.{js,jsx}'",
-    "react-native-rename": "babel-node src/index.js",
+    "react-native-rename-config": "babel-node src/index.js",
     "precommit": "lint-staged"
   },
   "lint-staged": {
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/grzmot22/react-native-rename.git"
+    "url": "git+https://github.com/grzmot22/react-native-rename-config.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@grzmot22"
