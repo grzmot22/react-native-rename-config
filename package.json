@@ -1,5 +1,5 @@
 {
-  "name": "react-native-rename",
+  "name": "@grzmot22/react-native-rename-config",
   "version": "3.0.0-alpha-2",
   "description": "Rename react-native app with just one command",
   "main": "lib/index.js",
@@ -23,6 +23,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/grzmot22/react-native-rename.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@grzmot22"
   },
   "keywords": [
     "react-native",
