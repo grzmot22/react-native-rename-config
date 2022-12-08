@@ -4,16 +4,18 @@
 // lC - Lowercase
 
 import colors from 'colors';
-import fs from 'fs';
 import program from 'commander';
+import fs from 'fs';
 import replace from 'node-replace';
+import path from 'path';
 import shell from 'shelljs';
 import pjson from '../package.json';
-import path from 'path';
-import { foldersAndFiles } from './config/foldersAndFiles';
-import { filesToModifyContent } from './config/filesToModifyContent';
 import { bundleIdentifiers } from './config/bundleIdentifiers';
-import { loadAppConfig, loadAndroidManifest, __dirname, iosRequiredPaths } from './utils';
+import { filesToModifyContent } from './config/filesToModifyContent';
+import { firebaseReplace } from './config/firebaseReplace';
+import { foldersAndFiles } from './config/foldersAndFiles';
+import { iconReplace } from './config/iconReplace';
+import { iosRequiredPaths, loadAndroidManifest, loadAppConfig, __dirname } from './utils';
 
 const androidEnvs = ['main', 'debug'];
 const projectName = pjson.name;
@@ -58,11 +60,14 @@ loadAppConfig()
       .version(projectVersion)
       .arguments('[newName]')
       .option('-b, --bundleID [value]', 'Set custom bundle identifier eg. "com.junedomingo.travelapp"')
+      .option('-i, --icon [value]', 'Replace icons from current path')
+      .option('--firebase-replace [value]', 'Replace Firebase configuration, provide a root path for configuration')
       .action(argName => {
         const newName = argName || currentAppName;
         const nS_NewName = newName.replace(/\s/g, '');
         const pattern = /^([\p{Letter}\p{Number}])+([\p{Letter}\p{Number}\s]+)$/u;
         const bundleID = program.bundleID ? program.bundleID.toLowerCase() : null;
+        const iconPath = program.icon ? program.icon : null;
         let newBundlePath;
         const listOfFoldersAndFiles = foldersAndFiles(currentAppName, newName);
         const listOfFilesToModifyContent = filesToModifyContent(currentAppName, newName, projectName);
@@ -126,6 +131,60 @@ loadAppConfig()
           return Promise.all(promises);
         };
 
+        const resolveIconReplace = () => {
+          if (iconPath) {
+            const [iconOrigin, destIcons] = iconReplace(iconPath, currentAppName);
+
+            const promises = iconOrigin.map((element, i) => {
+              const dest = destIcons[i];
+
+              const successMsg = `/${dest} ${colors.green('ICON REPLACED')}`;
+
+              const src = path.join(__dirname, element);
+              const dst = path.join(__dirname, dest);
+
+              const move = shell.cp('-r', src, dst);
+
+              if (move.code === 0) {
+                console.log(successMsg);
+              } else {
+                console.log(colors.yellow("Ignore above error if this file doesn't exist"));
+              }
+            });
+
+            return Promise.all(promises);
+          } else {
+            return Promise.resolve();
+          }
+        };
+
+        const resolveFirebaseReplace = () => {
+          if (iconPath) {
+            const [firebaseOrigin, destFirebase] = firebaseReplace(iconPath, currentAppName);
+
+            const promises = firebaseOrigin.map((element, i) => {
+              const dest = destFirebase[i];
+
+              const successMsg = `/${dest} ${colors.green('REPLACED')}`;
+
+              const src = path.join(__dirname, element);
+              const dst = path.join(__dirname, dest);
+
+              const move = shell.cp('-r', src, dst);
+
+              if (move.code === 0) {
+                console.log(successMsg);
+              } else {
+                console.log(colors.yellow("Ignore above error if this file doesn't exist"));
+              }
+            });
+
+            return Promise.all(promises);
+          } else {
+            return Promise.resolve();
+          }
+        };
+
         // Modify file content from ./config/filesToModifyContent.js
         const resolveFilesToModifyContent = () =>
           new Promise(resolve => {
@@ -186,52 +245,53 @@ loadAppConfig()
               const currentBundleID = $data('manifest').attr('package');
               const newBundleID = program.bundleID ? bundleID : currentBundleID;
 
-              const promises = androidEnvs.map(env => {
-                return new Promise(envResolve => {
-                  const javaFileBase = `android/app/src/${env}/java`;
+              const promises = androidEnvs.map(
+                env =>
+                  new Promise(envResolve => {
+                    const javaFileBase = `android/app/src/${env}/java`;
 
-                  const newJavaPath = `${javaFileBase}/${newBundleID.replace(/\./g, '/')}`;
-                  const currentJavaPath = `${javaFileBase}/${currentBundleID.replace(/\./g, '/')}`;
-                  const shouldDelete = !newJavaPath.includes(currentJavaPath);
+                    const newJavaPath = `${javaFileBase}/${newBundleID.replace(/\./g, '/')}`;
+                    const currentJavaPath = `${javaFileBase}/${currentBundleID.replace(/\./g, '/')}`;
+                    const shouldDelete = !newJavaPath.includes(currentJavaPath);
 
-                  if (bundleID) {
-                    newBundlePath = newJavaPath;
-                  } else {
-                    newBundlePath = newBundleID.replace(/\./g, '/').toLowerCase();
-                    newBundlePath = `${javaFileBase}/${newBundlePath}`;
-                  }
+                    if (bundleID) {
+                      newBundlePath = newJavaPath;
+                    } else {
+                      newBundlePath = newBundleID.replace(/\./g, '/').toLowerCase();
+                      newBundlePath = `${javaFileBase}/${newBundlePath}`;
+                    }
 
-                  const fullCurrentBundlePath = path.join(__dirname, currentJavaPath);
-                  const fullNewBundlePath = path.join(__dirname, newBundlePath);
+                    const fullCurrentBundlePath = path.join(__dirname, currentJavaPath);
+                    const fullNewBundlePath = path.join(__dirname, newBundlePath);
 
-                  shell.mkdir('-p', fullNewBundlePath);
+                    shell.mkdir('-p', fullNewBundlePath);
 
-                  const successMsg = `${newBundlePath} ${colors.green('BUNDLE IDENTIFIER CHANGED')}`;
+                    const successMsg = `${newBundlePath} ${colors.green('BUNDLE IDENTIFIER CHANGED')}`;
 
-                  const shellMove = shell.mv('-f', fullCurrentBundlePath + '/*', fullNewBundlePath);
-                  // if "outside repository" error occured
-                  if (shellMove.code === 0) {
-                    console.log(successMsg);
-                  } else {
-                    console.log(`Error moving: "${currentJavaPath}" "${newBundlePath}"`);
-                  }
+                    const shellMove = shell.mv('-f', fullCurrentBundlePath + '/*', fullNewBundlePath);
+                    // if "outside repository" error occured
+                    if (shellMove.code === 0) {
+                      console.log(successMsg);
+                    } else {
+                      console.log(`Error moving: "${currentJavaPath}" "${newBundlePath}"`);
+                    }
 
-                  if (shouldDelete) {
-                    shell.rm('-rf', fullCurrentBundlePath);
-                  }
+                    if (shouldDelete) {
+                      shell.rm('-rf', fullCurrentBundlePath);
+                    }
 
-                  const vars = {
-                    currentBundleID,
-                    newBundleID,
-                    newBundlePath,
-                    javaFileBase,
-                    currentJavaPath,
-                    newJavaPath,
-                  };
+                    const vars = {
+                      currentBundleID,
+                      newBundleID,
+                      newBundlePath,
+                      javaFileBase,
+                      currentJavaPath,
+                      newJavaPath,
+                    };
 
-                  return resolveBundleIdentifiers(vars).then(envResolve);
-                });
-              });
+                    return resolveBundleIdentifiers(vars).then(envResolve);
+                  })
+              );
 
               return Promise.all(promises).then(resolve);
             });
@@ -244,6 +304,8 @@ loadAppConfig()
         const run = () =>
           Promise.resolve()
             .then(validatePaths)
+            .then(resolveIconReplace)
+            .then(resolveFirebaseReplace)
             .then(resolveFoldersAndFiles)
             .then(resolveFilesToModifyContent)
             .then(resolveJavaFiles)
