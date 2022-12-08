@@ -4,7 +4,7 @@
 export function filesToModifyContent(currentAppName, newName) {
   const nS_CurrentAppName = currentAppName.replace(/\s/g, '');
   const nS_NewName = newName.replace(/\s/g, '');
-
+  console.log(`[filesToModifyContent][test] ...nsCAN: ${nS_CurrentAppName} ... nsNN: ${nS_NewName}  ...  CAN: ${currentAppName}... NN: ${newName}`);
   return [
     {
       regex: `<string name="app_name">${currentAppName}</string>`,
@@ -22,7 +22,7 @@ export function filesToModifyContent(currentAppName, newName) {
         `ios/${nS_NewName}.xcworkspace/contents.xcworkspacedata`,
         `ios/${nS_NewName}.xcodeproj/xcshareddata/xcschemes/${nS_NewName}-tvOS.xcscheme`,
         `ios/${nS_NewName}.xcodeproj/xcshareddata/xcschemes/${nS_NewName}.xcscheme`,
-        `ios/${nS_NewName}/AppDelegate.m`,
+        `ios/${nS_NewName}/AppDelegate.mm`,
         'android/settings.gradle',
         `ios/${nS_NewName}Tests/${nS_NewName}Tests.m`,
         'ios/build/info.plist',
@@ -41,8 +41,8 @@ export function filesToModifyContent(currentAppName, newName) {
       paths: [`ios/${nS_NewName}/Info.plist`],
     },
     {
-      regex: `"name": "${nS_CurrentAppName}"`,
-      replacement: `"name": "${nS_NewName}"`,
+      regex: `"name": "${currentAppName}"`,
+      replacement: `"name": "${newName}"`,
       paths: ['package.json'],
     },
     {
