@@ -1,6 +1,6 @@
+import cheerio from 'cheerio';
 import fs from 'fs';
 import path from 'path';
-import cheerio from 'cheerio';
 
 const devTestRNProject = ''; // For Development eg '/Users/junedomingo/Desktop/RN49'
 export const __dirname = devTestRNProject || process.cwd();
@@ -24,3 +24,11 @@ export function iosRequiredPaths(currentAppName) {
 
   return [`ios/${nS_CurrentAppName}`];
 }
+
+export const replaceSpecialChars = str =>
+  str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/([^\w]+|\s+)/g, '-') // Replace space and other characters by hyphen
+    .replace(/\-\-+/g, '-') // Replaces multiple hyphens by one hyphen
+    .replace(/(^-+|-+$)/g, ''); // Remove extra hyphens from beginning or end of the string

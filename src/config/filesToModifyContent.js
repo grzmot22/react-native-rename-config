@@ -1,10 +1,12 @@
 // nS - No Space
 // lC - Lowercase
 
+import { replaceSpecialChars } from '../utils';
+
 export function filesToModifyContent(currentAppName, newName) {
   const nS_CurrentAppName = currentAppName.replace(/\s/g, '');
-  const nS_NewName = newName.replace(/\s/g, '');
-  console.log(`[filesToModifyContent][test] ...nsCAN: ${nS_CurrentAppName} ... nsNN: ${nS_NewName}  ...  CAN: ${currentAppName}... NN: ${newName}`);
+  const nS_NewName = replaceSpecialChars(newName.replace(/\s/g, ''));
+
   return [
     {
       regex: `<string name="app_name">${currentAppName}</string>`,
@@ -22,6 +24,7 @@ export function filesToModifyContent(currentAppName, newName) {
         `ios/${nS_NewName}.xcworkspace/contents.xcworkspacedata`,
         `ios/${nS_NewName}.xcodeproj/xcshareddata/xcschemes/${nS_NewName}-tvOS.xcscheme`,
         `ios/${nS_NewName}.xcodeproj/xcshareddata/xcschemes/${nS_NewName}.xcscheme`,
+        `ios/${nS_NewName}/AppDelegate.m`,
         `ios/${nS_NewName}/AppDelegate.mm`,
         'android/settings.gradle',
         `ios/${nS_NewName}Tests/${nS_NewName}Tests.m`,
