@@ -45,7 +45,7 @@ export function filesToModifyContent(currentAppName, newName) {
     },
     {
       regex: currentAppName,
-      replacement: newName,
+      replacement: nS_NewName,
       paths: [`ios/fastlane/Fastfile`],
     },
     {
