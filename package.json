@@ -1,6 +1,6 @@
 {
   "name": "react-native-rename-config",
-  "version": "3.0.0-alpha-9",
+  "version": "3.0.0-alpha-10",
   "description": "Rename react-native app with just one command",
   "main": "lib/index.js",
   "scripts": {
