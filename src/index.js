@@ -63,7 +63,7 @@ loadAppConfig()
       .option('-i, --icon [value]', 'Replace icons from current path')
       .option('--firebase-replace [value]', 'Replace Firebase configuration, provide a root path for configuration')
       .action(argName => {
-        const newName = argName || currentAppName;
+        const newName = process.env.APP_NAME || argName || currentAppName;
         const nS_NewName = newName.replace(/\s/g, '');
         const pattern = /^([\p{Letter}\p{Number}])+([\p{Letter}\p{Number}\s]+)$/u;
         const bundleID = program.bundleID ? program.bundleID.toLowerCase() : null;
@@ -71,7 +71,7 @@ loadAppConfig()
         let newBundlePath;
         const listOfFoldersAndFiles = foldersAndFiles(currentAppName, newName);
         const listOfFilesToModifyContent = filesToModifyContent(currentAppName, newName, projectName);
-
+        console.log(`New name: ${newName}`);
         if (bundleID) {
           newBundlePath = bundleID.replace(/\./g, '/');
           const id = bundleID.split('.');
