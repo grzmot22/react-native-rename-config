@@ -5,9 +5,10 @@ import { replaceSpecialChars } from '../utils';
 
 export function filesToModifyContent(currentAppName, newName) {
   const nS_CurrentAppName = currentAppName.replace(/\s/g, '');
-  const nS_NewName = replaceSpecialChars(newName.replace(/\s/g, ''));
 
-  return [
+  const nS_NewName = replaceSpecialChars(newName.replace(/\s/g, ''));
+  
+return [
     {
       regex: `<string name="app_name">${currentAppName}</string>`,
       replacement: `<string name="app_name">${newName}</string>`,

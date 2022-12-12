@@ -1,12 +1,13 @@
 // nS - No Space
 // lC - Lowercase
 import globby from 'globby';
+import { replaceSpecialChars } from '../utils';
 
 export function bundleIdentifiers({ currentAppName, newName, currentBundleID, newBundleID, newBundlePath }) {
   const nS_CurrentAppName = currentAppName.replace(/\s/g, '');
   const ns_CurrentBundleIDAsPath = currentBundleID.replace(/\./g, '/');
   const ns_NewBundleIDAsPath = newBundleID.replace(/\./g, '/');
-  const nS_NewName = newName.replace(/\s/g, '');
+  const nS_NewName = replaceSpecialChars(newName.replace(/\s/g, ''));
 
   return [
     {

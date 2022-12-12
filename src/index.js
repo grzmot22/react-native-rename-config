@@ -15,7 +15,7 @@ import { filesToModifyContent } from './config/filesToModifyContent';
 import { firebaseReplace } from './config/firebaseReplace';
 import { foldersAndFiles } from './config/foldersAndFiles';
 import { iconReplace } from './config/iconReplace';
-import { iosRequiredPaths, loadAndroidManifest, loadAppConfig, __dirname } from './utils';
+import { iosRequiredPaths, loadAndroidManifest, loadAppConfig, replaceSpecialChars, __dirname } from './utils';
 
 const androidEnvs = ['main', 'debug'];
 const projectName = pjson.name;
@@ -64,7 +64,7 @@ loadAppConfig()
       .option('--firebase-replace [value]', 'Replace Firebase configuration, provide a root path for configuration')
       .action(argName => {
         const newName = process.env.APP_NAME || argName || currentAppName;
-        const nS_NewName = newName.replace(/\s/g, '');
+        const nS_NewName = replaceSpecialChars(newName.replace(/\s/g, ''));
         const pattern = /^([\p{Letter}\p{Number}])+([\p{Letter}\p{Number}\s]+)$/u;
         const bundleID = program.bundleID ? program.bundleID.toLowerCase() : null;
         const iconPath = program.icon ? program.icon : null;
