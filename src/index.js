@@ -68,6 +68,7 @@ loadAppConfig()
         const pattern = /^([\p{Letter}\p{Number}])+([\p{Letter}\p{Number}\s]+)$/u;
         const bundleID = program.bundleID ? program.bundleID.toLowerCase() : null;
         const iconPath = program.icon ? program.icon : null;
+        const firebaseReplacePath = program.firebaseReplace ? program.firebaseReplace : null;
         let newBundlePath;
         const listOfFoldersAndFiles = foldersAndFiles(currentAppName, newName);
         const listOfFilesToModifyContent = filesToModifyContent(currentAppName, newName, projectName);
@@ -132,6 +133,7 @@ loadAppConfig()
         };
 
         const resolveIconReplace = () => {
+          console.log('Icon files replace Starting...');
           if (iconPath) {
             const [iconOrigin, destIcons] = iconReplace(iconPath, currentAppName);
 
@@ -151,17 +153,20 @@ loadAppConfig()
                 console.log(colors.yellow("Ignore above error if this file doesn't exist"));
               }
             });
+            console.log('Icon files replace done...');
 
             return Promise.all(promises);
           } else {
+            console.log('Icon files replace skipped');
+
             return Promise.resolve();
           }
         };
 
         const resolveFirebaseReplace = () => {
-          if (iconPath) {
-            const [firebaseOrigin, destFirebase] = firebaseReplace(iconPath, currentAppName);
-
+          console.log('Firebase config files replace Starting...');
+          if (firebaseReplacePath) {
+            const [firebaseOrigin, destFirebase] = firebaseReplace(firebaseReplacePath, currentAppName);
             const promises = firebaseOrigin.map((element, i) => {
               const dest = destFirebase[i];
 
@@ -178,9 +183,12 @@ loadAppConfig()
                 console.log(colors.yellow("Ignore above error if this file doesn't exist"));
               }
             });
+            console.log('Firebase config files replace done...');
 
             return Promise.all(promises);
           } else {
+            console.log('Firebase config files replace skipped');
+
             return Promise.resolve();
           }
         };
