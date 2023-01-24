@@ -25,7 +25,7 @@ import {
   validateGitRepo,
   validateNewBundleID,
   validateNewName,
-  validateNewPathContentStr,
+  validateNewPathContentStr
 } from './utils';
 
 program

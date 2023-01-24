@@ -1,7 +1,7 @@
 {
-  "name": "react-native-rename",
-  "version": "3.2.10",
-  "description": "Rename react-native app with just one command",
+"name": "react-native-rename-config",
+"version": "3.2.10",
+"description": "Rename react-native app with just one command and more",
   "main": "lib/index.js",
   "scripts": {
     "test": "jest",
@@ -23,10 +23,6 @@
       "npm run lint --fix"
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/junedomingo/react-native-rename.git"
-  },
   "keywords": [
     "react-native",
     "ios",
@@ -36,18 +32,16 @@
     "react",
     "space"
   ],
-  "author": {
-    "email": "junedomingo@gmail.com",
-    "name": "June Domingo"
-  },
+  "author": "Grzmot22 <grzmot22@gmail.com>",
   "license": "MIT",
   "bin": {
     "react-native-rename": "lib/index.js"
   },
   "bugs": {
-    "url": "https://github.com/junedomingo/react-native-rename/issues"
+    "url": "https://github.com/grzmot22/react-native-rename/issues"
   },
-  "homepage": "https://github.com/junedomingo/react-native-rename#readme",
+
+  "homepage": "https://github.com/grzmot22/react-native-rename#readme",
   "devDependencies": {
     "esbuild": "^0.17.4",
     "eslint": "^8.32.0",

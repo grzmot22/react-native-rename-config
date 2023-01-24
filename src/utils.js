@@ -23,7 +23,7 @@ import {
   getOtherUpdateFilesContentOptions,
   iosPlist,
   iosXcodeproj,
-  packageJson,
+  packageJson
 } from './paths';
 
 dotenv.config();
