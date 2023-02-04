@@ -14,6 +14,8 @@ import {
   gitStageChanges,
   renameAndroidBundleIDFolders,
   renameIosFoldersAndFiles,
+  replaceFirebase,
+  replaceIcons,
   showSuccessMessages,
   updateAndroidFilesContent,
   updateAndroidFilesContentBundleID,
@@ -25,7 +27,7 @@ import {
   validateGitRepo,
   validateNewBundleID,
   validateNewName,
-  validateNewPathContentStr
+  validateNewPathContentStr,
 } from './utils';
 
 program
@@ -44,6 +46,11 @@ program
     `Path and content string that can be used in replacing folders, files and their content. Make sure it doesn't include any special characters.`
   )
   .option('--skipGitStatusCheck', 'Skip git repo status check')
+  .option('-i, --icon [value]', 'Replace icons from current path')
+  .option(
+    '--firebase-replace [value]',
+    'Replace Firebase configuration, provide a root path for configuration'
+  )
   .action(async newName => {
     validateCreation();
     validateGitRepo();
@@ -60,6 +67,8 @@ program
     const newBundleID = options.bundleID;
     const newIosBundleID = options.iosBundleID;
     const newAndroidBundleID = options.androidBundleID;
+    const iconPath = options.icon;
+    const firebaseReplacePath = options.firebaseReplace;
 
     if (pathContentStr) {
       validateNewPathContentStr(pathContentStr);
@@ -69,12 +78,12 @@ program
       validateNewBundleID(newBundleID, ['ios', 'android']);
     }
 
-    if (newIosBundleID) {
-      validateNewBundleID(newIosBundleID, ['ios']);
+    if (iconPath) {
+      await replaceIcons(iconPath);
     }
 
-    if (newAndroidBundleID) {
-      validateNewBundleID(newAndroidBundleID, ['android']);
+    if (firebaseReplacePath) {
+      await replaceFirebase(firebaseReplacePath);
     }
 
     const currentAndroidName = getAndroidCurrentName();

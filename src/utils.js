@@ -18,12 +18,14 @@ import {
   buildPaths,
   getAndroidUpdateBundleIDOptions,
   getAndroidUpdateFilesContentOptions,
+  getFirebasePaths,
+  getIconPaths,
   getIosFoldersAndFilesPaths,
   getIosUpdateFilesContentOptions,
   getOtherUpdateFilesContentOptions,
   iosPlist,
   iosXcodeproj,
-  packageJson
+  packageJson,
 } from './paths';
 
 dotenv.config();
@@ -489,5 +491,66 @@ export const checkPackageUpdate = async () => {
     }
   } catch (error) {
     console.log('Error checking for update:\n%O', error);
+  }
+};
+
+export const replaceIcons = async iconPath => {
+  console.log('Icon files replace Starting...');
+  if (iconPath) {
+    const [iconOrigin, destIcons] = getIconPaths(iconPath, currentAppName);
+
+    const promises = iconOrigin.map((element, i) => {
+      const dest = destIcons[i];
+
+      const successMsg = `/${dest} ${colors.green('ICON REPLACED')}`;
+
+      const src = path.join(__dirname, element);
+      const dst = path.join(__dirname, dest);
+
+      const move = shell.cp('-r', src, dst);
+
+      if (move.code === 0) {
+        console.log(successMsg);
+      } else {
+        console.log(colors.yellow("Ignore above error if this file doesn't exist"));
+      }
+    });
+    console.log('Icon files replace done...');
+
+    return Promise.all(promises);
+  } else {
+    console.log('Icon files replace skipped');
+
+    return Promise.resolve();
+  }
+};
+
+export const replaceFirebase = async firebaseReplacePath => {
+  console.log('Firebase config files replace Starting...');
+  if (firebaseReplacePath) {
+    const [firebaseOrigin, destFirebase] = getFirebasePaths(firebaseReplacePath, currentAppName);
+    const promises = firebaseOrigin.map((element, i) => {
+      const dest = destFirebase[i];
+
+      const successMsg = `/${dest} ${colors.green('REPLACED')}`;
+
+      const src = path.join(__dirname, element);
+      const dst = path.join(__dirname, dest);
+
+      const move = shell.cp('-r', src, dst);
+
+      if (move.code === 0) {
+        console.log(successMsg);
+      } else {
+        console.log(colors.yellow("Ignore above error if this file doesn't exist"));
+      }
+    });
+    console.log('Firebase config files replace done...');
+
+    return Promise.all(promises);
+  } else {
+    console.log('Firebase config files replace skipped');
+
+    return Promise.resolve();
   }
 };
