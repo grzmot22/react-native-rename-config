@@ -1,354 +1,152 @@
 #!/usr/bin/env node
+import { program } from 'commander';
 
-// nS - No Space
-// lC - Lowercase
-
-import colors from 'colors';
-import program from 'commander';
-import fs from 'fs';
-import replace from 'node-replace';
-import path from 'path';
-import shell from 'shelljs';
 import pjson from '../package.json';
-import { bundleIdentifiers } from './config/bundleIdentifiers';
-import { filesToModifyContent } from './config/filesToModifyContent';
-import { firebaseReplace } from './config/firebaseReplace';
-import { foldersAndFiles } from './config/foldersAndFiles';
-import { iconReplace } from './config/iconReplace';
-import { iosRequiredPaths, loadAndroidManifest, loadAppConfig, replaceSpecialChars, __dirname } from './utils';
+import {
+  bundleIDToPath,
+  checkGitRepoStatus,
+  checkPackageUpdate,
+  cleanBuilds,
+  getAndroidCurrentBundleID,
+  getAndroidCurrentName,
+  getIosCurrentName,
+  getIosXcodeProjectPathName,
+  gitStageChanges,
+  renameAndroidBundleIDFolders,
+  renameIosFoldersAndFiles,
+  replaceFirebase,
+  replaceIcons,
+  showSuccessMessages,
+  updateAndroidFilesContent,
+  updateAndroidFilesContentBundleID,
+  updateAndroidNameInStringsXml,
+  updateIosFilesContent,
+  updateIosNameInInfoPlist,
+  updateOtherFilesContent,
+  validateCreation,
+  validateGitRepo,
+  validateNewBundleID,
+  validateNewName,
+  validateNewPathContentStr,
+} from './utils';
 
-const androidEnvs = ['main', 'debug'];
-const projectName = pjson.name;
-const projectVersion = pjson.version;
-const replaceOptions = {
-  recursive: true,
-  silent: true,
-};
+program
+  .name(pjson.name)
+  .description(pjson.description)
+  .version(pjson.version)
+  .arguments('[newName]')
+  .option(
+    '-b, --bundleID [value]',
+    'Set custom bundle identifier for both ios and android eg. "com.example.app" or "com.example".'
+  )
+  .option('--iosBundleID [value]', 'Set custom bundle identifier specifically for ios')
+  .option('--androidBundleID [value]', 'Set custom bundle identifier specifically for android')
+  .option(
+    '-p, --pathContentStr [value]',
+    `Path and content string that can be used in replacing folders, files and their content. Make sure it doesn't include any special characters.`
+  )
+  .option('--skipGitStatusCheck', 'Skip git repo status check')
+  .option('-i, --icon [value]', 'Replace icons from current path')
+  .option(
+    '--firebase-replace [value]',
+    'Replace Firebase configuration, provide a root path for configuration'
+  )
+  .action(async newName => {
+    validateCreation();
+    validateGitRepo();
 
-function replaceContent(regex, replacement, paths) {
-  replace({
-    regex,
-    replacement,
-    paths,
-    ...replaceOptions,
+    const options = program.opts();
+
+    if (!options.skipGitStatusCheck) {
+      checkGitRepoStatus();
+    }
+
+    validateNewName(newName, options);
+
+    const pathContentStr = options.pathContentStr;
+    const newBundleID = options.bundleID;
+    const newIosBundleID = options.iosBundleID;
+    const newAndroidBundleID = options.androidBundleID;
+    const iconPath = options.icon;
+    const firebaseReplacePath = options.firebaseReplace;
+
+    if (pathContentStr) {
+      validateNewPathContentStr(pathContentStr);
+    }
+
+    if (newBundleID) {
+      validateNewBundleID(newBundleID, ['ios', 'android']);
+    }
+
+    if (iconPath) {
+      await replaceIcons(iconPath);
+    }
+
+    if (firebaseReplacePath) {
+      await replaceFirebase(firebaseReplacePath);
+    }
+
+    const currentAndroidName = getAndroidCurrentName();
+    const currentIosName = getIosCurrentName();
+    const currentPathContentStr = getIosXcodeProjectPathName();
+    const newPathContentStr = pathContentStr || newName;
+    const currentAndroidBundleID = getAndroidCurrentBundleID();
+
+    await renameIosFoldersAndFiles(newPathContentStr);
+    await updateIosFilesContent({
+      currentName: currentIosName,
+      newName,
+      currentPathContentStr,
+      newPathContentStr,
+      newBundleID: newIosBundleID || newBundleID,
+    });
+
+    await updateIosNameInInfoPlist(newName);
+
+    if (newAndroidBundleID || newBundleID) {
+      await renameAndroidBundleIDFolders({
+        currentBundleIDAsPath: bundleIDToPath(currentAndroidBundleID),
+        newBundleIDAsPath: bundleIDToPath(newAndroidBundleID || newBundleID),
+      });
+    }
+
+    await updateAndroidFilesContent({
+      currentName: currentAndroidName,
+      newName,
+      newBundleIDAsPath: bundleIDToPath(
+        newAndroidBundleID || newBundleID || currentAndroidBundleID
+      ),
+    });
+
+    if (newAndroidBundleID || newBundleID) {
+      await updateAndroidFilesContentBundleID({
+        currentBundleID: currentAndroidBundleID,
+        newBundleID: newAndroidBundleID || newBundleID,
+        currentBundleIDAsPath: bundleIDToPath(currentAndroidBundleID),
+        newBundleIDAsPath: bundleIDToPath(newAndroidBundleID || newBundleID),
+      });
+    }
+
+    await updateAndroidNameInStringsXml(newName);
+    await updateOtherFilesContent({
+      newName,
+      currentPathContentStr,
+      newPathContentStr,
+      currentIosName,
+      newAndroidBundleID: newAndroidBundleID || newBundleID,
+      newIosBundleID: newIosBundleID || newBundleID,
+    });
+
+    cleanBuilds();
+    showSuccessMessages(newName);
+    gitStageChanges();
+    checkPackageUpdate();
   });
 
-  for (const filePath of paths) {
-    console.log(`${filePath.replace(__dirname, '')} ${colors.green('MODIFIED')}`);
-  }
+// If no arguments are passed, show help
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+  process.exit();
 }
 
-const cleanBuilds = () => {
-  const deleteDirectories = shell.rm('-rf', [
-    path.join(__dirname, 'ios/build/*'),
-    path.join(__dirname, 'android/.gradle/*'),
-    path.join(__dirname, 'android/app/build/*'),
-    path.join(__dirname, 'android/build/*'),
-  ]);
-
-  console.log('Done removing builds.'.green);
-
-  return Promise.resolve(deleteDirectories);
-};
-
-loadAppConfig()
-  .then(appConfig => {
-    const currentAppName = appConfig.name || (appConfig.expo && appConfig.expo.name);
-    const nS_CurrentAppName = currentAppName.replace(/\s/g, '');
-
-    program
-      .version(projectVersion)
-      .arguments('[newName]')
-      .option('-b, --bundleID [value]', 'Set custom bundle identifier eg. "com.junedomingo.travelapp"')
-      .option('-i, --icon [value]', 'Replace icons from current path')
-      .option('--firebase-replace [value]', 'Replace Firebase configuration, provide a root path for configuration')
-      .action(argName => {
-        const newName = process.env.APP_NAME || argName || currentAppName;
-        const nS_NewName = replaceSpecialChars(newName.replace(/\s/g, ''));
-        const pattern = /^([\p{Letter}\p{Number}])+([\p{Letter}\p{Number}\s]+)$/u;
-        const bundleID = program.bundleID ? program.bundleID.toLowerCase() : null;
-        const iconPath = program.icon ? program.icon : null;
-        const firebaseReplacePath = program.firebaseReplace ? program.firebaseReplace : null;
-        let newBundlePath;
-        const listOfFoldersAndFiles = foldersAndFiles(currentAppName, newName);
-        const listOfFilesToModifyContent = filesToModifyContent(currentAppName, newName, projectName);
-        console.log(`New name: ${newName}`);
-        if (bundleID) {
-          newBundlePath = bundleID.replace(/\./g, '/');
-          const id = bundleID.split('.');
-          const validBundleID = /^([a-zA-Z]([a-zA-Z0-9_])*\.)+[a-zA-Z]([a-zA-Z0-9_])*$/u;
-          if (id.length < 2) {
-            return console.log(
-              'Invalid Bundle Identifier. Add something like "com.travelapp" or "com.junedomingo.travelapp"'
-            );
-          }
-          if (!validBundleID.test(bundleID)) {
-            return console.log(
-              'Invalid Bundle Identifier. It must have at least two segments (one or more dots). Each segment must start with a letter. All characters must be alphanumeric or an underscore [a-zA-Z0-9_]'
-            );
-          }
-        }
-
-        if (!pattern.test(newName)) {
-          return console.log(
-            `"${newName}" is not a valid name for a project. Please use a valid identifier name (alphanumeric and space).`
-          );
-        }
-
-        const validatePaths = () =>
-          new Promise(resolve => {
-            const paths = iosRequiredPaths(currentAppName);
-
-            paths.forEach(item => {
-              if (!fs.existsSync(path.join(__dirname, item))) {
-                const warning = `Can't find an ios path or project. Make sure that the ios project path and property 'name' in app.json the same.`;
-
-                console.log(colors.red(warning));
-              }
-            });
-
-            resolve();
-          });
-
-        // Move files and folders from ./config/foldersAndFiles.js
-        const resolveFoldersAndFiles = () => {
-          const promises = listOfFoldersAndFiles.map(element => {
-            const dest = element.replace(new RegExp(nS_CurrentAppName, 'i'), nS_NewName);
-
-            const successMsg = `/${dest} ${colors.green('RENAMED')}`;
-
-            const src = path.join(__dirname, element);
-            const dst = path.join(__dirname, dest);
-
-            const move = shell.mv('-f', src, dst);
-
-            if (move.code === 0) {
-              console.log(successMsg);
-            } else {
-              console.log(colors.yellow("Ignore above error if this file doesn't exist"));
-            }
-          });
-
-          return Promise.all(promises);
-        };
-
-        const resolveIconReplace = () => {
-          console.log('Icon files replace Starting...');
-          if (iconPath) {
-            const [iconOrigin, destIcons] = iconReplace(iconPath, currentAppName);
-
-            const promises = iconOrigin.map((element, i) => {
-              const dest = destIcons[i];
-
-              const successMsg = `/${dest} ${colors.green('ICON REPLACED')}`;
-
-              const src = path.join(__dirname, element);
-              const dst = path.join(__dirname, dest);
-
-              const move = shell.cp('-r', src, dst);
-
-              if (move.code === 0) {
-                console.log(successMsg);
-              } else {
-                console.log(colors.yellow("Ignore above error if this file doesn't exist"));
-              }
-            });
-            console.log('Icon files replace done...');
-
-            return Promise.all(promises);
-          } else {
-            console.log('Icon files replace skipped');
-
-            return Promise.resolve();
-          }
-        };
-
-        const resolveFirebaseReplace = () => {
-          console.log('Firebase config files replace Starting...');
-          if (firebaseReplacePath) {
-            const [firebaseOrigin, destFirebase] = firebaseReplace(firebaseReplacePath, currentAppName);
-            const promises = firebaseOrigin.map((element, i) => {
-              const dest = destFirebase[i];
-
-              const successMsg = `/${dest} ${colors.green('REPLACED')}`;
-
-              const src = path.join(__dirname, element);
-              const dst = path.join(__dirname, dest);
-
-              const move = shell.cp('-r', src, dst);
-
-              if (move.code === 0) {
-                console.log(successMsg);
-              } else {
-                console.log(colors.yellow("Ignore above error if this file doesn't exist"));
-              }
-            });
-            console.log('Firebase config files replace done...');
-
-            return Promise.all(promises);
-          } else {
-            console.log('Firebase config files replace skipped');
-
-            return Promise.resolve();
-          }
-        };
-
-        // Modify file content from ./config/filesToModifyContent.js
-        const resolveFilesToModifyContent = () =>
-          new Promise(resolve => {
-            let filePathsCount = 0;
-            let itemsProcessed = 0;
-            listOfFilesToModifyContent.map(file => {
-              filePathsCount += file.paths.length;
-
-              file.paths.map((filePath, index) => {
-                const newPaths = [];
-
-                setTimeout(() => {
-                  itemsProcessed++;
-                  if (fs.existsSync(path.join(__dirname, filePath))) {
-                    newPaths.push(path.join(__dirname, filePath));
-                    replaceContent(file.regex, file.replacement, newPaths);
-                  }
-                  if (itemsProcessed === filePathsCount) {
-                    resolve();
-                  }
-                }, 200 * index);
-              });
-            });
-          });
-
-        const resolveBundleIdentifiers = params => {
-          const { currentBundleID, newBundleID, newBundlePath } = params;
-
-          const promises = bundleIdentifiers({
-            currentAppName,
-            newName,
-            projectName,
-            currentBundleID,
-            newBundleID,
-            newBundlePath,
-          }).map(file =>
-            Promise.all(
-              file.paths.map(
-                filePath =>
-                  new Promise(resolve => {
-                    const newPaths = [];
-                    if (fs.existsSync(path.join(__dirname, filePath))) {
-                      newPaths.push(path.join(__dirname, filePath));
-                      replaceContent(file.regex, file.replacement, newPaths);
-                    }
-                    resolve();
-                  })
-              )
-            )
-          );
-
-          return Promise.all(promises);
-        };
-
-        const resolveJavaFiles = () =>
-          new Promise(resolve => {
-            loadAndroidManifest().then($data => {
-              const currentBundleID = $data('manifest').attr('package');
-              const newBundleID = program.bundleID ? bundleID : currentBundleID;
-
-              const promises = androidEnvs.map(
-                env =>
-                  new Promise(envResolve => {
-                    const javaFileBase = `android/app/src/${env}/java`;
-
-                    const newJavaPath = `${javaFileBase}/${newBundleID.replace(/\./g, '/')}`;
-                    const currentJavaPath = `${javaFileBase}/${currentBundleID.replace(/\./g, '/')}`;
-                    const shouldDelete = !newJavaPath.includes(currentJavaPath);
-
-                    if (bundleID) {
-                      newBundlePath = newJavaPath;
-                    } else {
-                      newBundlePath = newBundleID.replace(/\./g, '/').toLowerCase();
-                      newBundlePath = `${javaFileBase}/${newBundlePath}`;
-                    }
-
-                    const fullCurrentBundlePath = path.join(__dirname, currentJavaPath);
-                    const fullNewBundlePath = path.join(__dirname, newBundlePath);
-
-                    shell.mkdir('-p', fullNewBundlePath);
-
-                    const successMsg = `${newBundlePath} ${colors.green('BUNDLE IDENTIFIER CHANGED')}`;
-
-                    const shellMove = shell.mv('-f', fullCurrentBundlePath + '/*', fullNewBundlePath);
-                    // if "outside repository" error occured
-                    if (shellMove.code === 0) {
-                      console.log(successMsg);
-                    } else {
-                      console.log(`Error moving: "${currentJavaPath}" "${newBundlePath}"`);
-                    }
-
-                    if (shouldDelete) {
-                      shell.rm('-rf', fullCurrentBundlePath);
-                    }
-
-                    const vars = {
-                      currentBundleID,
-                      newBundleID,
-                      newBundlePath,
-                      javaFileBase,
-                      currentJavaPath,
-                      newJavaPath,
-                    };
-
-                    return resolveBundleIdentifiers(vars).then(envResolve);
-                  })
-              );
-
-              return Promise.all(promises).then(resolve);
-            });
-          });
-
-        const gitUpdateChanges = () => {
-          shell.exec(`git add . `);
-        };
-
-        const run = () =>
-          Promise.resolve()
-            .then(validatePaths)
-            .then(resolveIconReplace)
-            .then(resolveFirebaseReplace)
-            .then(resolveFoldersAndFiles)
-            .then(resolveFilesToModifyContent)
-            .then(resolveJavaFiles)
-            .then(gitUpdateChanges)
-            .then(cleanBuilds)
-            .then(() => console.log(`APP SUCCESSFULLY RENAMED TO "${newName}"! 🎉 🎉 🎉`.green))
-            .then(() => {
-              if (fs.existsSync(path.join(__dirname, 'ios', 'Podfile'))) {
-                console.log(
-                  `${colors.yellow('Podfile has been modified, please run "pod install" inside ios directory.')}`
-                );
-              }
-            })
-            .then(() =>
-              console.log(
-                `${colors.yellow(
-                  'Please make sure to run "watchman watch-del-all" and "npm start --reset-cache" before running the app.'
-                )}`
-              )
-            );
-
-        return run().catch(error => {
-          console.log(colors.red(error));
-        });
-      })
-      .parse(process.argv);
-
-    if (!process.argv.slice(2).length) {
-      program.outputHelp();
-    }
-  })
-  .catch(err => {
-    if (err.code === 'ENOENT') {
-      return console.log('Directory should be created using "react-native init"');
-    }
-
-    return console.log('Something went wrong: ', err);
-  });
+program.parseAsync(process.argv);

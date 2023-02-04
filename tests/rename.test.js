@@ -1,64 +1,71 @@
-
-
+/* eslint-disable no-undef */
 const shell = require('shelljs');
 const path = require('path');
 
 const run = (cwd, args) => {
   shell.exec(`node ../../../lib/index.js ${args}`, {
     cwd,
-    silent: true
+    silent: true,
   });
-}
+};
 
-const getDiff = (cwd) => {
+const getDiff = cwd => {
   const diff = shell.exec(`git diff --staged`, {
     cwd,
-    silent: true
+    silent: true,
   });
 
   return diff.stdout;
-}
+};
 
-const resetGit = (cwd) => {
+const resetGit = cwd => {
   shell.exec(`git reset -q HEAD -- .`, {
     cwd,
-    silent: true
+    silent: true,
   });
   shell.exec(`git clean -f -q -- .`, {
     cwd,
-    silent: true
+    silent: true,
   });
   shell.exec(`git checkout -q -- .`, {
     cwd,
-    silent: true
+    silent: true,
   });
-}
+};
 
-describe('rn-versions/0.64', () => {
-  const cwd = path.join(__dirname, 'rn-versions/0.64');
+describe('rn-versions/0.70.6', () => {
+  const cwd = path.join(__dirname, 'rn-versions/0.70.6');
 
   afterEach(() => {
     resetGit(cwd);
   });
 
-  test('change bundle id', () => {
-    run(cwd, `-b "com.test64.app"`);
+  test('Change app name', () => {
+    run(cwd, `"Demo App"`);
 
     const result = getDiff(cwd);
 
     expect(result).toMatchSnapshot();
   });
 
-  test('change app name', () => {
-    run(cwd, `"New Test App"`);
+  test('Change app name and bundle id for both ios and android', () => {
+    run(cwd, `"Demo App" -b com.example.demoapp`);
 
     const result = getDiff(cwd);
 
     expect(result).toMatchSnapshot();
   });
 
-  test('change app name and bundle id', () => {
-    run(cwd, `"New Test App" -b "com.test64.app"`);
+  test('Change app name and bundle id for android only', () => {
+    run(cwd, `"Demo App" --androidBundleID com.example.demoapp`);
+
+    const result = getDiff(cwd);
+
+    expect(result).toMatchSnapshot();
+  });
+
+  test('Change app name and bundle id for ios only', () => {
+    run(cwd, `"Demo App" --iosBundleID com.example.demoapp`);
 
     const result = getDiff(cwd);
 
