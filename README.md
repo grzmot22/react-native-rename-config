@@ -11,19 +11,14 @@ Rename react-native app with just one command and more
 ### Usage
 
 ```
-npx react-native-rename-config <newName>
-```
-
-> With multiple word name (or set environment variable called APP_NAME)
+npx react-native-rename-config@latest "new_name"
 
 ```
-npx react-native-rename-config "New App"
-```
 
-> With custom Bundle Identifier (Android only. For iOS, please use Xcode)
+> With custom Bundle Identifier (or set environment variable called APP_NAME)
 
 ```
-npx react-native-rename-config <newName> -b <bundleIdentifier>
+npx react-native-rename-config@latest "new_name" -b "bundle_identifier"
 ```
 
 > With custom icon to replace
@@ -78,6 +73,7 @@ npx react-native-rename-config <newName> --firebase-replace <configPath>
                         ├── ic_launcher_foreground.png
                         ├── ic_launcher_monochrome.png
                         └── ic_launcher.png
+
 ```
 
 ### Example
@@ -103,13 +99,13 @@ npx react-native-rename-config "Travel App" -b com.junedomingo.travelapp
 
 ### CLI Options
 
-|            Name            | Description                                                                                                                                  |
-| :------------------------: | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-b` or `--bundleID` [value] | Set custom bundle identifier for both ios and android eg. "com.example.app" or "com.example". |
-| `--iosBundleID` [value] | Set custom bundle identifier specifically for ios. |
-| `--androidBundleID` [value] | Set custom bundle identifier specifically for android. |
+|                Name                | Description                                                                                                                                  |
+| :--------------------------------: | -------------------------------------------------------------------------------------------------------------------------------------------- |
+|    `-b` or `--bundleID` [value]    | Set custom bundle identifier for both ios and android eg. "com.example.app" or "com.example".                                                |
+|      `--iosBundleID` [value]       | Set custom bundle identifier specifically for ios.                                                                                           |
+|    `--androidBundleID` [value]     | Set custom bundle identifier specifically for android.                                                                                       |
 | `-p` or `--pathContentStr` [value] | Path and content string that can be used in replacing folders, files and their content. Make sure it doesn't include any special characters. |
-|   `--skipGitStatusCheck`   | Skip git repo status check                                                                                                                   |
+|       `--skipGitStatusCheck`       | Skip git repo status check                                                                                                                   |
 
 ### Local installation
 
@@ -127,7 +123,7 @@ npm install react-native-rename-config -g
 
 ### Support creator
 
-<a href="https://www.buymeacoffee.com/junedomingo"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;"  target="_blank"></a>
+<a href="https://www.buymeacoffee.com/junedomingo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ### Support me
 
