@@ -1,7 +1,7 @@
 {
-"name": "react-native-rename-config",
-"version": "3.2.12",
-"description": "Rename react-native app with just one command and more",
+  "name": "react-native-rename-config",
+  "version": "3.2.13",
+  "description": "Rename react-native app with just one command and more",
   "main": "lib/index.js",
   "scripts": {
     "test": "jest",
@@ -40,7 +40,6 @@
   "bugs": {
     "url": "https://github.com/grzmot22/react-native-rename/issues"
   },
-
   "homepage": "https://github.com/grzmot22/react-native-rename#readme",
   "devDependencies": {
     "esbuild": "^0.17.5",
