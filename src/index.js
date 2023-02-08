@@ -64,7 +64,7 @@ program
     validateNewName(newName, options);
 
     const pathContentStr = options.pathContentStr;
-    const newBundleID = options.bundleID;
+    const newBundleID = options.bundleID || process.env.APP_NAME;
     const newIosBundleID = options.iosBundleID;
     const newAndroidBundleID = options.androidBundleID;
     const iconPath = options.icon;
