@@ -51,10 +51,10 @@ program
     '--firebase-replace [value]',
     'Replace Firebase configuration, provide a root path for configuration'
   )
-  .action(async newName => {
+  .action(async newNameArg => {
+    const newName = newNameArg || process.env.APP_NAME;
     validateCreation();
     validateGitRepo();
-
     const options = program.opts();
 
     if (!options.skipGitStatusCheck) {
@@ -64,7 +64,7 @@ program
     validateNewName(newName, options);
 
     const pathContentStr = options.pathContentStr;
-    const newBundleID = options.bundleID || process.env.APP_NAME;
+    const newBundleID = options.bundleID;
     const newIosBundleID = options.iosBundleID;
     const newAndroidBundleID = options.androidBundleID;
     const iconPath = options.icon;
