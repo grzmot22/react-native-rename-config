@@ -494,15 +494,15 @@ export const checkPackageUpdate = async () => {
   }
 };
 
-export const replaceIcons = async iconPath => {
+export const replaceIcons = async (iconPath, currentIosName) => {
   console.log('Icon files replace Starting...');
   if (iconPath) {
-    const [iconOrigin, destIcons] = getIconPaths(iconPath, currentAppName);
+    const [iconOrigin, destIcons] = getIconPaths(iconPath, currentIosName);
 
     const promises = iconOrigin.map((element, i) => {
       const dest = destIcons[i];
 
-      const successMsg = `/${dest} ${colors.green('ICON REPLACED')}`;
+      const successMsg = `/${dest} ${chalk.green('ICON REPLACED')}`;
 
       const src = path.join(__dirname, element);
       const dst = path.join(__dirname, dest);
@@ -512,7 +512,7 @@ export const replaceIcons = async iconPath => {
       if (move.code === 0) {
         console.log(successMsg);
       } else {
-        console.log(colors.yellow("Ignore above error if this file doesn't exist"));
+        console.log(chalk.yellow("Ignore above error if this file doesn't exist"));
       }
     });
     console.log('Icon files replace done...');
@@ -528,11 +528,11 @@ export const replaceIcons = async iconPath => {
 export const replaceFirebase = async firebaseReplacePath => {
   console.log('Firebase config files replace Starting...');
   if (firebaseReplacePath) {
-    const [firebaseOrigin, destFirebase] = getFirebasePaths(firebaseReplacePath, currentAppName);
+    const [firebaseOrigin, destFirebase] = getFirebasePaths(firebaseReplacePath);
     const promises = firebaseOrigin.map((element, i) => {
       const dest = destFirebase[i];
 
-      const successMsg = `/${dest} ${colors.green('REPLACED')}`;
+      const successMsg = `/${dest} ${chalk.green('REPLACED')}`;
 
       const src = path.join(__dirname, element);
       const dst = path.join(__dirname, dest);
@@ -542,7 +542,7 @@ export const replaceFirebase = async firebaseReplacePath => {
       if (move.code === 0) {
         console.log(successMsg);
       } else {
-        console.log(colors.yellow("Ignore above error if this file doesn't exist"));
+        console.log(chalk.yellow("Ignore above error if this file doesn't exist"));
       }
     });
     console.log('Firebase config files replace done...');

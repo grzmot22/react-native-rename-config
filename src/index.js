@@ -78,19 +78,19 @@ program
       validateNewBundleID(newBundleID, ['ios', 'android']);
     }
 
-    if (iconPath) {
-      await replaceIcons(iconPath);
-    }
-
-    if (firebaseReplacePath) {
-      await replaceFirebase(firebaseReplacePath);
-    }
-
     const currentAndroidName = getAndroidCurrentName();
     const currentIosName = getIosCurrentName();
     const currentPathContentStr = getIosXcodeProjectPathName();
     const newPathContentStr = pathContentStr || newName;
     const currentAndroidBundleID = getAndroidCurrentBundleID();
+
+    if (iconPath) {
+      await replaceIcons(iconPath, currentIosName);
+    }
+
+    if (firebaseReplacePath) {
+      await replaceFirebase(firebaseReplacePath);
+    }
 
     await renameIosFoldersAndFiles(newPathContentStr);
     await updateIosFilesContent({

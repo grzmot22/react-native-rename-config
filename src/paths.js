@@ -341,7 +341,7 @@ export function getFirebasePaths(firebasePath) {
   return [originPaths, destPaths];
 }
 
-export function getIconPaths(iconPath, currentName) {
+export function getIconPaths(iconPath, currentIosName) {
   const originPaths = [
     `${iconPath}/android/icon/mipmap-anydpi-v26/ic_launcher.xml`,
     `${iconPath}/android/icon/mipmap-anydpi-v26/ic_launcher_round.xml`,
@@ -413,7 +413,7 @@ export function getIconPaths(iconPath, currentName) {
     `android/app/src/main/res/mipmap-xhdpi/bootsplash_logo.png`,
     `android/app/src/main/res/mipmap-xxhdpi/bootsplash_logo.png`,
     `android/app/src/main/res/mipmap-xxxhdpi/bootsplash_logo.png`,
-    `ios/${currentName}/Images.xcassets`,
+    `ios/${currentIosName}/Images.xcassets`,
   ];
 
   return [originPaths, destPaths];
