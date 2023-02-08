@@ -1,6 +1,6 @@
 {
   "name": "react-native-rename-config",
-  "version": "3.2.14",
+  "version": "3.2.15",
   "description": "Rename react-native app with just one command and more",
   "main": "lib/index.js",
   "scripts": {
@@ -44,12 +44,12 @@
   "devDependencies": {
     "esbuild": "^0.17.6",
     "eslint": "^8.33.0",
-    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.3",
-    "jest": "^29.4.1",
-    "lint-staged": "^13.1.0",
-    "prettier": "^2.8.3"
+    "jest": "^29.4.2",
+    "lint-staged": "^13.1.1",
+    "prettier": "^2.8.4"
   },
   "dependencies": {
     "chalk": "^5.2.0",
