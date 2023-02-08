@@ -504,8 +504,8 @@ export const replaceIcons = async (iconPath, currentIosName) => {
 
       const successMsg = `/${dest} ${chalk.green('ICON REPLACED')}`;
 
-      const src = path.join(__dirname, element);
-      const dst = path.join(__dirname, dest);
+      const src = path.join(APP_PATH, element);
+      const dst = path.join(APP_PATH, dest);
 
       const move = shell.cp('-r', src, dst);
 
@@ -534,8 +534,8 @@ export const replaceFirebase = async firebaseReplacePath => {
 
       const successMsg = `/${dest} ${chalk.green('REPLACED')}`;
 
-      const src = path.join(__dirname, element);
-      const dst = path.join(__dirname, dest);
+      const src = path.join(APP_PATH, element);
+      const dst = path.join(APP_PATH, dest);
 
       const move = shell.cp('-r', src, dst);
 
