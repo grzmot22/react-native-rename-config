@@ -199,6 +199,13 @@ export const getAndroidCurrentBundleID = () => {
   // parse android/app/build.gradle
   const gradleFile = path.join(APP_PATH, 'android', 'app', 'build.gradle');
   const gradleFileContent = fs.readFileSync(gradleFile, 'utf8');
+
+  const bundleIDFromGradleNameSpace = gradleFileContent.match(/namespace\s+['"](.+)['"]/)[1];
+
+  if (bundleIDFromGradleNameSpace) {
+    return bundleIDFromGradleNameSpace;
+  }
+
   const bundleIDFromGradle = gradleFileContent.match(/applicationId\s+['"](.+)['"]/)[1];
 
   if (bundleIDFromGradle) {
