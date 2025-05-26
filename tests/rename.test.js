@@ -33,15 +33,20 @@ const resetGit = cwd => {
   });
 };
 
-describe('rn-versions/0.70.6', () => {
-  const cwd = path.join(__dirname, 'rn-versions/0.70.6');
+expect.addSnapshotSerializer({
+  test: val => typeof val === 'string',
+  print: val => val.replace(/\r\n/g, '\n').replace(/\\/g, '/'),
+});
+
+describe('rn-versions/0.77.1', () => {
+  const cwd = path.join(__dirname, 'rn-versions/0.77.1');
 
   afterEach(() => {
     resetGit(cwd);
   });
 
   test('Change app name', () => {
-    run(cwd, `"Demo App"`);
+    run(cwd, `"Travel App"`);
 
     const result = getDiff(cwd);
 
@@ -49,7 +54,7 @@ describe('rn-versions/0.70.6', () => {
   });
 
   test('Change app name and bundle id for both ios and android', () => {
-    run(cwd, `"Demo App" -b com.example.demoapp`);
+    run(cwd, `"Travel App" -b com.example.travelapp`);
 
     const result = getDiff(cwd);
 
@@ -57,7 +62,7 @@ describe('rn-versions/0.70.6', () => {
   });
 
   test('Change app name and bundle id for android only', () => {
-    run(cwd, `"Demo App" --androidBundleID com.example.demoapp`);
+    run(cwd, `"Travel App" --androidBundleID com.example.travelapp`);
 
     const result = getDiff(cwd);
 
@@ -65,7 +70,7 @@ describe('rn-versions/0.70.6', () => {
   });
 
   test('Change app name and bundle id for ios only', () => {
-    run(cwd, `"Demo App" --iosBundleID com.example.demoapp`);
+    run(cwd, `"Travel App" --iosBundleID com.example.travelapp`);
 
     const result = getDiff(cwd);
 
