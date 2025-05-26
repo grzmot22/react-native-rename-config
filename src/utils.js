@@ -23,7 +23,7 @@ import {
   getIosFoldersAndFilesPaths,
   getIosUpdateFilesContentOptions,
   getOtherUpdateFilesContentOptions,
-  iosPlist,
+  iosInfoPlist,
   iosXcodeproj,
   packageJson,
 } from './paths';
@@ -34,8 +34,8 @@ const APP_PATH = process.env.DEV_APP_PATH || process.cwd();
 const PROMISE_DELAY = 200;
 const MAX_NAME_LENGTH = 30;
 const NON_LANGUAGE_ALPHANUMERIC_REGEX = /[^\p{L}\p{N}]+/gu;
-const MIN_LANGUAGE_ALPHANUMERIC_NAME_LENGTH = 4;
-const VALID_ANDROID_BUNDLE_ID_REGEX = /^[a-zA-Z]{1}[a-zA-Z0-9\.]{1,}$/;
+const MIN_LANGUAGE_ALPHANUMERIC_NAME_LENGTH = 3;
+const VALID_ANDROID_BUNDLE_ID_REGEX = /^[a-zA-Z]{1}[a-zA-Z0-9\._]{1,}$/;
 const VALID_IOS_BUNDLE_ID_REGEX = /^[a-zA-Z]{1}[a-zA-Z0-9\.\-]{1,}$/;
 
 const pluralize = (count, noun, suffix = 'es') => `${count} ${noun}${count !== 1 ? suffix : ''}`;
@@ -50,7 +50,7 @@ const normalizePath = process.platform === 'win32' ? require('normalize-path') :
 const androidValuesStringsFullPath = path.join(APP_PATH, androidValuesStrings);
 
 export const validateCreation = () => {
-  const iosInfoPlistFullPath = globbySync(normalizePath(path.join(APP_PATH, iosPlist)))[0];
+  const iosInfoPlistFullPath = globbySync(normalizePath(path.join(APP_PATH, iosInfoPlist)))[0];
   const fileExists =
     fs.existsSync(iosInfoPlistFullPath) && fs.existsSync(androidValuesStringsFullPath);
 
@@ -171,7 +171,7 @@ const getElementFromXml = ({ filepath, selector }) => {
 };
 
 export const getIosCurrentName = () => {
-  const filepath = globbySync(normalizePath(path.join(APP_PATH, iosPlist)))[0];
+  const filepath = globbySync(normalizePath(path.join(APP_PATH, iosInfoPlist)))[0];
   const selector = 'dict > key:contains("CFBundleDisplayName") + string';
   const element = getElementFromXml({ filepath, selector });
 
@@ -179,10 +179,16 @@ export const getIosCurrentName = () => {
 };
 
 export const getAndroidCurrentName = () => {
-  const selector = 'resources > string[name="app_name"]';
-  const element = getElementFromXml({ filepath: androidValuesStringsFullPath, selector });
+  const gradleFile = path.join(APP_PATH, 'android', 'settings.gradle');
+  const gradleFileContent = fs.readFileSync(gradleFile, 'utf8');
 
-  return decodeXmlEntities(element.text());
+  const projectName = gradleFileContent.match(/rootProject.name\s+=\s+['"](.*)['"]/)[1];
+
+  if (projectName) {
+    return projectName;
+  }
+
+  throw new Error(`Unable to get project name from settings.gradle for project ${APP_PATH}`);
 };
 
 export const getAndroidCurrentBundleID = () => {
@@ -354,7 +360,7 @@ const updateElementInXml = async ({ filepath, selector, text }) => {
 
 export const updateIosNameInInfoPlist = async newName => {
   await updateElementInXml({
-    filepath: globbySync(normalizePath(path.join(APP_PATH, iosPlist)))[0],
+    filepath: globbySync(normalizePath(path.join(APP_PATH, iosInfoPlist)))[0],
     selector: 'dict > key:contains("CFBundleDisplayName") + string',
     text: newName,
   });
