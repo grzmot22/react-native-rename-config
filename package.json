@@ -60,7 +60,7 @@
     "html-entities": "^2.4.0",
     "normalize-path": "^3.0.0",
     "replace-in-file": "^7.0.1",
-    "shelljs": "^0.8.5",
+    "shelljs": "^0.9.0",
     "update-check": "^1.5.4"
   }
 }
