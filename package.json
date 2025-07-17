@@ -59,7 +59,7 @@
     "globby": "^13.2.0",
     "html-entities": "^2.4.0",
     "normalize-path": "^3.0.0",
-    "replace-in-file": "^7.0.1",
+    "replace-in-file": "^8.0.0",
     "shelljs": "^0.8.5",
     "update-check": "^1.5.4"
   }
