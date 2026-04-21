@@ -77,3 +77,43 @@ describe('rn-versions/0.77.1', () => {
     expect(result).toMatchSnapshot();
   });
 });
+
+describe('rn-versions/0.79.0', () => {
+  const cwd = path.join(__dirname, 'rn-versions/0.79.0');
+
+  afterEach(() => {
+    resetGit(cwd);
+  });
+
+  test('Change app name', () => {
+    run(cwd, `"Travel App"`);
+
+    const result = getDiff(cwd);
+
+    expect(result).toMatchSnapshot();
+  });
+
+  test('Change app name and bundle id for both ios and android', () => {
+    run(cwd, `"Travel App" -b com.example.travelapp`);
+
+    const result = getDiff(cwd);
+
+    expect(result).toMatchSnapshot();
+  });
+
+  test('Change app name and bundle id for android only', () => {
+    run(cwd, `"Travel App" --androidBundleID com.example.travelapp`);
+
+    const result = getDiff(cwd);
+
+    expect(result).toMatchSnapshot();
+  });
+
+  test('Change app name and bundle id for ios only', () => {
+    run(cwd, `"Travel App" --iosBundleID com.example.travelapp`);
+
+    const result = getDiff(cwd);
+
+    expect(result).toMatchSnapshot();
+  });
+});

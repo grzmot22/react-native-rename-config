@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import { globbySync } from 'globby';
